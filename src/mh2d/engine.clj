@@ -106,6 +106,12 @@
     (swap! (state :start-x) + x)
     (swap! (state :start-y) + y)))
 
+(defn draw-background
+  "Draw the background"
+  []
+  (fill 200)
+  (rect 0 0 (width) (height)))
+
 ;; TODO multimethod for handling key presses
 
 (defn draw []
@@ -115,6 +121,7 @@
         moving (deref (state :moving))]
     (clear-frame)
     (update-movement moving)
+    (draw-background)
     (world/draw-world world-map)
     (draw-character)
     (show-frame-rate)))

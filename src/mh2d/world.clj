@@ -43,11 +43,3 @@
   coordinate pair map."
   [spec]
   nil)
-
-(defn tile
-  "Tile the canvas by reading in a spec."
-  [start-x start-y grid-dimension]
-  ;; TODO update this to loop through the world map
-  (doseq [x (range start-x 300 grid-dimension)
-          y (range start-y 200 grid-dimension)]
-    (draw-grid x y grid-dimension)))
