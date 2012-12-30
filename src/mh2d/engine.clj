@@ -1,10 +1,11 @@
 (ns mh2d.engine
   (:use quil.core)
+  (:require [mh2d.world :as world])  
   (:import java.awt.event.KeyEvent))
 
 (defn setup []
   (set-state!
-   :background? (atom false)
+   :world-map (atom (world/world-map))
    :bg (create-graphics 300 300 :java2d)
    :player? (atom false)
    :player (load-image "crono_walks.gif")
@@ -14,31 +15,11 @@
    :moving (atom :still))
   (no-stroke)
   (smooth)
-  (frame-rate 30))
+  (frame-rate 60))
 
 (defn grid-dimension []
   "Sets the default grid height and width"
-  20)
-
-(defn draw-grid
-  "Draw a box based on x,y coordinates."
-  [x y]
-  (stroke-weight 1)
-  (stroke 255 255 255)
-  (fill 10 100 205)
-  (rect x y (grid-dimension) (grid-dimension))
-  ;; Show the x coord in the grid
-  (text-size 8)
-  (fill 255)
-  (text (str x) (+ x 2) (+ y 8)))
-
-;; Todo create a func for reading an input file and converting
-;; it to tile coordinate map
-(defn read-tile-spec
-  "Read in a file that contains the spec and output
-  coordinate pair map."
-  [spec]
-  nil)
+  30)
 
 (defn draw-character []
   (let [p (state :player?)]
@@ -71,28 +52,6 @@
     (.rect l (float 0) (float 0 ) (float 300) (float 300))
     (.line l (float 0) (float 0 ) (float 300) (float 300))
     (.endDraw l)))
-
-(defn tile
-  "Tile the canvas by reading in a spec."
-  [start-x start-y]
-  (doseq [x (range start-x (width) (grid-dimension))
-          y (range start-y (height) (grid-dimension))]
-    (draw-grid x y)))
-
-(defn draw-background
-  "Check the global state if the background was drawn
-  if not then draw the background."
-  []
-  (let [b (state :background?)
-        bg (state :bg)]
-    (if-not (deref b)
-      (do
-        (println "Drawing background")
-        (.beginDraw bg)
-        (.background bg (random 255))
-        (.endDraw bg)
-        (reset! b true))
-      nil)))
 
 (def moves {:up [0 5]
             :down [0 -5]
@@ -150,8 +109,12 @@
 ;; TODO multimethod for handling key presses
 
 (defn draw []
-  (clear-frame)
-  (update-movement (deref (state :moving)))
-  (tile (deref (state :start-x)) (deref (state :start-y)))
-  (draw-character)
-  (show-frame-rate))
+  (let [start-x (deref (state :start-x))
+        start-y (deref (state :start-y))
+        world-map (world/world-map);;(deref (state :world-map))
+        moving (deref (state :moving))]
+    (clear-frame)
+    (update-movement moving)
+    (world/draw-world world-map)
+    (draw-character)
+    (show-frame-rate)))
