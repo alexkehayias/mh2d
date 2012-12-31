@@ -25,13 +25,14 @@
   (text (str map-x) (+ x 2) (+ y 8))
   (text (str map-y) (+ x 2) (+ y 16)))
 
-(defn draw-tile [tile]
+(defn draw-tile [tile offset]
   (let [x (:x tile)
         y (:y tile)
+        [offset-x offset-y] offset 
         boundary (:boundary tile)
         [start-x start-y] (deref (state :start))
-        end-x (+ start-x x)
-        end-y (+ start-y y)
+        end-x (+ start-x x offset-x)
+        end-y (+ start-y y offset-y)
         [player-x player-y] (state :player-position)]
     ;; Check if Player is in bounds
     ;; (if-not (boolean (some #{player-x} (range start-x (+ start-x 30)))) 
@@ -43,14 +44,20 @@
 (defn draw-world
   "Draw the tiles from the world map of a World record."
   [world]
-  (doseq [tile (:world-map world)]
-    (draw-tile tile)))
+  (let [offset (get-player-offset)]
+    (doseq [tile (:world-map world)]
+      (draw-tile tile offset))))
 
-(defn get-offset
-  "Translate the player position to canvas offset"
+(defn get-player-offset
+  "Translate the player position to canvas offset. At player 0,0
+  the offset should be where the player is drawn."
   []
-  
-  )
+  (let [[player-x player-y] (:position (deref (state :player)))
+        [canvas-x canvas-y] (deref (state :start))
+        [player-screen-x  player-screen-y] (state :player-position)
+        end-x (+ player-x player-screen-x)
+        end-y (+ player-y player-screen-y)]
+    [end-x end-y]))
 
 (defn read-tile-spec
   "Read in a file that contains the spec and output
