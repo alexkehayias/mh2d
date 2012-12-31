@@ -8,8 +8,8 @@
 (defn world-map
   "Test world map vector. Returns a vector of Tile records."
   []
-  (for [x (range 0 300 30)
-        y (range 0 200 30)]
+  (for [x (range 0 300 25)
+        y (range 0 200 25)]
     (->Tile x y true "tile.png")))
 
 (defn draw-grid
@@ -30,16 +30,16 @@
         y (:y tile)
         [offset-x offset-y] offset 
         boundary (:boundary tile)
-        [start-x start-y] (deref (state :start))
-        end-x (+ start-x x offset-x)
-        end-y (+ start-y y offset-y)
+        end-x (+ x offset-x)
+        end-y (+ y offset-y)
         [player-x player-y] (:position (deref (state :player)))]
     ;; Check if Player is in bounds
     ;; TODO update this for the map size to know the right
     ;; and bottom bounds
-    (if (or (>= player-x 0) (>= player-y 0))
+    (if (or (>= player-x -15) (>= player-y -10))
+      ;; the -15 and -10 are extra padding to make it look realistic
       (reset! (state :moving) :still))
-    (draw-grid end-x end-y 30 x y)))
+    (draw-grid end-x end-y 25 x y)))
 
 (defn draw-world
   "Draw the tiles from the world map of a World record."
@@ -53,7 +53,6 @@
   the offset should be where the player is drawn."
   []
   (let [[player-x player-y] (:position (deref (state :player)))
-        [canvas-x canvas-y] (deref (state :start))
         [player-screen-x  player-screen-y] (state :player-position)
         end-x (+ player-x player-screen-x)
         end-y (+ player-y player-screen-y)]

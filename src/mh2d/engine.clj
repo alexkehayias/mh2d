@@ -20,10 +20,8 @@
    :tile-width 30
    ;;:world (atom (world/world-map))
    :bg (create-graphics 300 300 :java2d)
-   :player (atom (->Player :player [0 0] (load-image "crono_walks.gif"))) 
+   :player (atom (->Player :player [-50 -50] (load-image "crono_walks.gif"))) 
    :player-position [(/ (width) 2) (/ (height) 2)]
-   ;; Set the position of where the tiles should be drawn from
-   :start (atom [0 0])
    :moving (atom :still))
   (no-stroke)
   (smooth)
@@ -61,18 +59,6 @@
   "Clear the frame"
   []
   (background 255))
-
-(defn layer
-  "Create a new PGraphics layer"
-  [w, h]
-  (let [l (create-graphics w h :java2d)]
-    (.beginDraw l)
-    (.background l (float 0))
-    (.stroke l (float 0))
-    (.fill l 0)
-    (.rect l (float 0) (float 0 ) (float 300) (float 300))
-    (.line l (float 0) (float 0 ) (float 300) (float 300))
-    (.endDraw l)))
 
 (def moves {:up [0 5]
             :down [0 -5]
@@ -131,7 +117,6 @@
   [direction]
   (let [[x y] (moves direction)
         player (deref (state :player))]
-    (swap! (state :start) #(map + % [x y]))
     (reset! (state :player) (update-position player x y))))
 
 (defn draw-background
@@ -141,7 +126,7 @@
   (rect 0 0 (width) (height)))
 
 (defn draw []
-  (let [world (->World (world/world-map) 0 0)
+  (let [world (->World (world/world-map) -50 -50)
         direction (deref (state :moving))]
     (clear-frame)
     (update-movement direction)
