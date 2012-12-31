@@ -35,17 +35,27 @@
     (image-mode :center)
     (image (:image player) x y 40 40)))
 
-(defn show-frame-rate []
+(defn show-frame-rate [world]
   (text-size 18)  
   (fill 0)
-  (text (str "FR: "(current-frame-rate)) 10 25))
+  (text (str "FR: "(current-frame-rate)) 10 25)
+  world)
 
-(defn show-player-xy []
+(defn show-player-xy [world]
   (let [player (deref (state :player))
         [x y] (:position player)]
     (text-size 18)
     (fill 0)
-    (text (str "Player xy: " x "," y) 10 50)))
+    (text (str "Player xy: " x "," y) 10 50))
+  nil)
+
+(defn dev-middleware
+  "Threads a world record to all dev middleware functions.
+  All middleware must take a world as an arg and return a world."
+  [world]
+  (-> world
+      (show-frame-rate)
+      (show-player-xy)))
 
 (defn clear-frame
   "Clear the frame"
@@ -138,5 +148,4 @@
     (draw-background)
     (world/draw-world world)
     (draw-character)
-    (show-frame-rate)
-    (show-player-xy)))
+    (dev-middleware world)))
