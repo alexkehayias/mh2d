@@ -17,9 +17,6 @@
 
 (defn setup []
   (set-state!
-   :tile-width 30
-   ;;:world (atom (world/world-map))
-   :bg (create-graphics 300 300 :java2d)
    :player (atom (->Player :player [-50 -50] (load-image "crono_walks.gif"))) 
    :player-position [(/ (width) 2) (/ (height) 2)]
    :moving (atom :still))

@@ -37,8 +37,8 @@
         [player-x player-y] (:position (deref (state :player)))]
     ;; Check if Player is in bounds
     (if (or
-         (>= player-x -15) (>= player-y -10)
-         (<= player-x (- width)) (<= player-y (- height)))
+         (>= player-x -15) (>= player-y 0)
+         (<= player-x (+ 10 (- width)) ) (<= player-y (+ 20 (- height))))
       ;; the -15 and -10 are extra padding to make it look realistic
       (reset! (state :moving) :still))
     (draw-grid end-x end-y 25 x y)))
