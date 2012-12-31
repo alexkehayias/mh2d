@@ -33,12 +33,12 @@
         [start-x start-y] (deref (state :start))
         end-x (+ start-x x offset-x)
         end-y (+ start-y y offset-y)
-        [player-x player-y] (state :player-position)]
+        [player-x player-y] (:position (deref (state :player)))]
     ;; Check if Player is in bounds
-    ;; (if-not (boolean (some #{player-x} (range start-x (+ start-x 30)))) 
-    ;;   (reset! (state :moving) :still))
-    ;; (if (true? boundary)
-    ;;   (reset! (state :moving) :still))
+    ;; TODO update this for the map size to know the right
+    ;; and bottom bounds
+    (if (or (>= player-x 0) (>= player-y 0))
+      (reset! (state :moving) :still))
     (draw-grid end-x end-y 30 x y)))
 
 (defn draw-world
