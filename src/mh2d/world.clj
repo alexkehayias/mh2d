@@ -1,7 +1,7 @@
 (ns mh2d.world
   (:use quil.core))
 
-(defrecord World [world-map start-x start-y])
+(defrecord World [world-map start-x start-y width height])
 
 (defrecord Tile [x y boundary image])
 
@@ -22,21 +22,23 @@
   ;; Show the x coord in the grid
   (text-size 8)
   (fill 255)
-  (text (str map-x) (+ x 2) (+ y 8))
-  (text (str map-y) (+ x 2) (+ y 16)))
+  (text (str (- map-x)) (+ x 2) (+ y 8))
+  (text (str (- map-y)) (+ x 2) (+ y 16)))
 
-(defn draw-tile [tile offset]
+(defn draw-tile [world tile offset]
   (let [x (:x tile)
         y (:y tile)
         [offset-x offset-y] offset 
         boundary (:boundary tile)
+        height (:height world)
+        width (:width world)
         end-x (+ x offset-x)
         end-y (+ y offset-y)
         [player-x player-y] (:position (deref (state :player)))]
     ;; Check if Player is in bounds
-    ;; TODO update this for the map size to know the right
-    ;; and bottom bounds
-    (if (or (>= player-x -15) (>= player-y -10))
+    (if (or
+         (>= player-x -15) (>= player-y -10)
+         (<= player-x (- width)) (<= player-y (- height)))
       ;; the -15 and -10 are extra padding to make it look realistic
       (reset! (state :moving) :still))
     (draw-grid end-x end-y 25 x y)))
@@ -46,7 +48,7 @@
   [world]
   (let [offset (get-player-offset)]
     (doseq [tile (:world-map world)]
-      (draw-tile tile offset))))
+      (draw-tile world tile offset))))
 
 (defn get-player-offset
   "Translate the player position to canvas offset. At player 0,0

@@ -126,7 +126,7 @@
   (rect 0 0 (width) (height)))
 
 (defn draw []
-  (let [world (->World (world/world-map) -50 -50)
+  (let [world (->World (world/world-map) -50 -50 300 200)
         direction (deref (state :moving))]
     (clear-frame)
     (update-movement direction)
