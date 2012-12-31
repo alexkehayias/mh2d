@@ -54,8 +54,9 @@
   "Translate the player position to canvas offset. At player 0,0
   the offset should be where the player is drawn."
   []
-  (let [[player-x player-y] (:position (deref (state :player)))
-        [player-screen-x  player-screen-y] (state :player-position)
+  (let [player (deref (state :player))
+        [player-x player-y] (:position player)
+        [player-screen-x  player-screen-y] (:draw-position player)
         end-x (+ player-x player-screen-x)
         end-y (+ player-y player-screen-y)]
     [end-x end-y]))

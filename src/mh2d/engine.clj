@@ -5,7 +5,7 @@
   (:import [mh2d.world World])
   (:import java.awt.event.KeyEvent))
 
-(defrecord Player [id position image])
+(defrecord Player [id position draw-position image])
 
 (defprotocol Entity
   (tick [world]
@@ -17,8 +17,7 @@
 
 (defn setup []
   (set-state!
-   :player (atom (->Player :player [-50 -50] (load-image "crono_walks.gif"))) 
-   :player-position [(/ (width) 2) (/ (height) 2)]
+   :player (atom (->Player :player [-50 -50] [(/ (width) 2) (/ (height) 2)] (load-image "crono_walks.gif"))) 
    :moving (atom :still))
   (no-stroke)
   (smooth)
@@ -26,7 +25,7 @@
 
 (defn draw-character []
   (let [player (deref (state :player))
-        [x y] (state :player-position)]
+        [x y] (:draw-position player)]
     (image-mode :center)
     (image (:image player) x y 40 40)))
 
