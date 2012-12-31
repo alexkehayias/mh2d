@@ -1,40 +1,51 @@
 (ns mh2d.engine
   (:use quil.core)
-  (:require [mh2d.world :as world])  
+  (:require [mh2d.world :as world])
+  (:use [mh2d.world :only (->World)])
+  (:import [mh2d.world World])
   (:import java.awt.event.KeyEvent))
+
+(defrecord Player [id position image])
+
+(defprotocol Entity
+  (tick [world]
+    "Update the world based on a tick for this entity."))
+
+(extend-type Player Entity
+  (tick [world]
+    nil))
 
 (defn setup []
   (set-state!
-   :world-map (atom (world/world-map))
+   :tile-width 30
+   ;;:world (atom (world/world-map))
    :bg (create-graphics 300 300 :java2d)
-   :player? (atom false)
-   :player (load-image "crono_walks.gif")
+   :player (atom (->Player :player [0 0] (load-image "crono_walks.gif"))) 
+   :player-position [(/ (width) 2) (/ (height) 2)]
    ;; Set the position of where the tiles should be drawn from
-   :start-x (atom 0)
-   :start-y (atom 0)
+   :start (atom [0 0])
    :moving (atom :still))
   (no-stroke)
   (smooth)
   (frame-rate 60))
 
-(defn grid-dimension []
-  "Sets the default grid height and width"
-  30)
-
 (defn draw-character []
-  (let [p (state :player?)]
-    (if-not (deref p)
-      (do
-        (image-mode :center)
-        (image (state :player) (/ (width) 2) (/ (height) 2) 40 40)
-        ;;(reset! p true)
-        ) 
-      nil)))
+  (let [player (deref (state :player))
+        [x y] (state :player-position)]
+    (image-mode :center)
+    (image (:image player) x y 40 40)))
 
 (defn show-frame-rate []
   (text-size 18)  
   (fill 0)
-  (text (str (current-frame-rate)) 10 25))
+  (text (str "FR: "(current-frame-rate)) 10 25))
+
+(defn show-player-xy []
+  (let [player (deref (state :player))
+        [x y] (:position player)]
+    (text-size 18)
+    (fill 0)
+    (text (str "Player xy: " x "," y) 10 50)))
 
 (defn clear-frame
   "Clear the frame"
@@ -90,6 +101,7 @@
 
 (defn key-release
   "Handler when a keyboard key is pressed."
+  ;; TODO multimethod for handling key presses
   []
   (let [raw-key (raw-key)
         the-key-code (key-code)
@@ -99,12 +111,18 @@
                           raw-key)]
     (reset! (state :moving) :still)))
 
+(defn update-position
+  "Update the :position of a record and return a new record."
+  [record x y]
+  (update-in record [:position] #(map + % [x y])))
+
 (defn update-movement
   "Updates the start-x and start-y based on the :movement atom"
   [direction]
-  (let [[x y] (moves direction)]
-    (swap! (state :start-x) + x)
-    (swap! (state :start-y) + y)))
+  (let [[x y] (moves direction)
+        player (deref (state :player))]
+    (swap! (state :start) #(map + % [x y]))
+    (reset! (state :player) (update-position player x y))))
 
 (defn draw-background
   "Draw the background"
@@ -112,16 +130,13 @@
   (fill 200)
   (rect 0 0 (width) (height)))
 
-;; TODO multimethod for handling key presses
-
 (defn draw []
-  (let [start-x (deref (state :start-x))
-        start-y (deref (state :start-y))
-        world-map (world/world-map);;(deref (state :world-map))
-        moving (deref (state :moving))]
+  (let [world (->World (world/world-map) 0 0)
+        direction (deref (state :moving))]
     (clear-frame)
-    (update-movement moving)
+    (update-movement direction)
     (draw-background)
-    (world/draw-world world-map)
+    (world/draw-world world)
     (draw-character)
-    (show-frame-rate)))
+    (show-frame-rate)
+    (show-player-xy)))

@@ -64,6 +64,7 @@
         the-key-code (key-code)
         the-key-pressed (if (= processing.core.PConstants/CODED (int raw-key)) the-key-code raw-key)
         move (moves (get valid-keys the-key-pressed :still))]
+    (println (str the-key-pressed))
     (swap! blob-location (partial change-location move))
     (swap! blob-location (partial normalise (params :screen-bounds)))
     (redraw)))
