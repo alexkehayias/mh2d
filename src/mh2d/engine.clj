@@ -110,10 +110,20 @@
 
 (defn update-movement
   "Updates the start-x and start-y based on the :movement atom"
-  [direction]
+  [direction world]
   (let [[x y] (moves direction)
-        player (deref (state :player))]
-    (reset! (state :player) (update-position player x y))))
+        player (deref (state :player))
+        [player-x player-y] (:position player)
+        width (:width world)
+        height (:height world)]
+        ;; Check if Player is in bounds
+    ;; TODO where should this actually go?
+    (if (or
+         (>= player-x -15) (>= player-y 0)
+         (<= player-x (+ 10 (- width)) ) (<= player-y (+ 20 (- height))))
+      ;; the -15 and -10 are extra padding to make it look realistic
+      (reset! (state :moving) :still)
+      (reset! (state :player) (update-position player x y)))))
 
 (defn draw-background
   "Draw the background"
@@ -125,7 +135,7 @@
   (let [world (->World (world/world-map) -50 -50 300 200)
         direction (deref (state :moving))]
     (clear-frame)
-    (update-movement direction)
+    (update-movement direction world)
     (draw-background)
     (world/draw-world world)
     (draw-character)

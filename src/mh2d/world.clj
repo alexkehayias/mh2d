@@ -30,25 +30,9 @@
         y (:y tile)
         [offset-x offset-y] offset 
         boundary (:boundary tile)
-        height (:height world)
-        width (:width world)
         end-x (+ x offset-x)
-        end-y (+ y offset-y)
-        [player-x player-y] (:position (deref (state :player)))]
-    ;; Check if Player is in bounds
-    (if (or
-         (>= player-x -15) (>= player-y 0)
-         (<= player-x (+ 10 (- width)) ) (<= player-y (+ 20 (- height))))
-      ;; the -15 and -10 are extra padding to make it look realistic
-      (reset! (state :moving) :still))
+        end-y (+ y offset-y)]
     (draw-grid end-x end-y 25 x y)))
-
-(defn draw-world
-  "Draw the tiles from the world map of a World record."
-  [world]
-  (let [offset (get-player-offset)]
-    (doseq [tile (:world-map world)]
-      (draw-tile world tile offset))))
 
 (defn get-player-offset
   "Translate the player position to canvas offset. At player 0,0
@@ -60,6 +44,13 @@
         end-x (+ player-x player-screen-x)
         end-y (+ player-y player-screen-y)]
     [end-x end-y]))
+
+(defn draw-world
+  "Draw the tiles from the world map of a World record."
+  [world]
+  (let [offset (get-player-offset)]
+    (doseq [tile (:world-map world)]
+      (draw-tile world tile offset))))
 
 (defn read-tile-spec
   "Read in a file that contains the spec and output
