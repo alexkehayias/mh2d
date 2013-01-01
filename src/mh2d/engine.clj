@@ -109,7 +109,9 @@
   (update-in record [:position] #(map + % [x y])))
 
 (defn is-in-bounds
-  "Determine if x, y coords are in bounds based on direction."
+  "Determine if x, y coords are in bounds based on direction.
+  The seemingly arbitrary if test values are to add some padding
+  based on the entity image so it looks natural."
   [x y width height direction]
   (case direction
     :left (if (>= x -15)
