@@ -108,6 +108,24 @@
   [record x y]
   (update-in record [:position] #(map + % [x y])))
 
+(defn is-in-bounds
+  "Determine if x, y coords are in bounds based on direction."
+  [x y width height direction]
+  (case direction
+    :left (if (>= x -15)
+            (boolean true)
+            (boolean false))
+    :up (if (>= y 0)
+          (boolean true)
+          (boolean false))
+    :right (if (<= x (+ 10 (- width)))
+             (boolean true)
+             (boolean false))
+    :down (if (<= y (+ 20 (- height)))
+            (boolean true)
+            (boolean false))
+    (boolean true)))
+
 (defn update-movement
   "Updates the start-x and start-y based on the :movement atom"
   [direction world]
@@ -116,12 +134,8 @@
         [player-x player-y] (:position player)
         width (:width world)
         height (:height world)]
-        ;; Check if Player is in bounds
-    ;; TODO where should this actually go?
-    (if (or
-         (>= player-x -15) (>= player-y 0)
-         (<= player-x (+ 10 (- width)) ) (<= player-y (+ 20 (- height))))
-      ;; the -15 and -10 are extra padding to make it look realistic
+    ;; Check if Player is in bounds
+    (if (is-in-bounds player-x player-y width height direction)
       (reset! (state :moving) :still)
       (reset! (state :player) (update-position player x y)))))
 
