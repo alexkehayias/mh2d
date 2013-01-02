@@ -110,8 +110,8 @@
 
 (defn update-position
   "Update the :position of a record and return a new record."
-  [record x y]
-  (update-in record [:position] #(map + % [x y])))
+  [entity x y]
+  (update-in entity [:position] #(map + % [x y])))
 
 (defn update-entity-movement [entity move]
   (assoc-in entity [:moving] move))
