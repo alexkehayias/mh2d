@@ -80,9 +80,6 @@
 (defn key-name-check [raw-key]
   (= processing.core.PConstants/CODED (int raw-key)))
 
-(defn update-entity-movement [entity move]
-  (assoc-in entity [:moving] move))
-
 (defn key-press
   "Handler when a keyboard key is pressed."
   []
@@ -116,6 +113,9 @@
   [record x y]
   (update-in record [:position] #(map + % [x y])))
 
+(defn update-entity-movement [entity move]
+  (assoc-in entity [:moving] move))
+
 (defn is-in-bounds
   "Determine if x, y coords are in bounds based on direction.
   The seemingly arbitrary if test values are to add some padding
@@ -142,8 +142,7 @@
   (let [[x y] (moves direction)
         player (deref (state :player))
         [player-x player-y] (:position player)
-        width (:width world)
-        height (:height world)]
+        [width height] (:dimensions world)]
     ;; Check if Player is in bounds
     (if (is-in-bounds player-x player-y width height direction)
       (reset! (state :player) (update-entity-movement player :still))
@@ -156,7 +155,7 @@
   (rect 0 0 (width) (height)))
 
 (defn draw []
-  (let [world (->World (world/world-map) -50 -50 300 200)
+  (let [world (->World (world/world-map) [-50 -50] [300 200])
         player (deref (state :player))
         move (:moving player)]
     (clear-frame)

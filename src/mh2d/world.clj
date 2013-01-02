@@ -1,7 +1,7 @@
 (ns mh2d.world
   (:use quil.core))
 
-(defrecord World [world-map start-x start-y width height])
+(defrecord World [world-map start dimensions])
 
 (defrecord Tile [x y boundary image])
 
