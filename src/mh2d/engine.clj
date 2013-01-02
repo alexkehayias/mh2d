@@ -5,7 +5,7 @@
   (:import [mh2d.world World])
   (:import java.awt.event.KeyEvent))
 
-(defrecord Player [id position draw-position image])
+(defrecord Player [id position draw-position image moving])
 
 (defprotocol Entity
   (tick [world]
@@ -17,8 +17,12 @@
 
 (defn setup []
   (set-state!
-   :player (atom (->Player :player [-50 -50] [(/ (width) 2) (/ (height) 2)] (load-image "crono_walks.gif"))) 
-   :moving (atom :still))
+   :player (atom (->Player
+                  :player
+                  [-50 -50]
+                  [(/ (width) 2) (/ (height) 2)]
+                  (load-image "crono_walks.gif")
+                  :still)))
   (no-stroke)
   (smooth)
   (frame-rate 60))
@@ -76,6 +80,9 @@
 (defn key-name-check [raw-key]
   (= processing.core.PConstants/CODED (int raw-key)))
 
+(defn update-entity-movement [entity move]
+  (assoc-in entity [:moving] move))
+
 (defn key-press
   "Handler when a keyboard key is pressed."
   []
@@ -87,9 +94,9 @@
                           raw-key)
         ;; Check if it's valid otherwise return :still
         move (get valid-keys the-key-pressed :still)
-        [start-x start-y] (move moves)]
+        player (deref (state :player))]
     ;; TODO handle multiple keys pressed
-    (reset! (state :moving) move)))
+    (reset! (state :player) (update-entity-movement player move))))
 
 (defn key-release
   "Handler when a keyboard key is pressed."
@@ -99,9 +106,10 @@
         the-key-code (key-code)
         ;; Get the exact key name
         the-key-released (if (key-name-check raw-key)
-                          the-key-code
-                          raw-key)]
-    (reset! (state :moving) :still)))
+                           the-key-code
+                           raw-key)
+        player (deref (state :player))]
+    (reset! (state :player) (update-entity-movement player :still))))
 
 (defn update-position
   "Update the :position of a record and return a new record."
@@ -138,7 +146,7 @@
         height (:height world)]
     ;; Check if Player is in bounds
     (if (is-in-bounds player-x player-y width height direction)
-      (reset! (state :moving) :still)
+      (reset! (state :player) (update-entity-movement player :still))
       (reset! (state :player) (update-position player x y)))))
 
 (defn draw-background
@@ -149,9 +157,10 @@
 
 (defn draw []
   (let [world (->World (world/world-map) -50 -50 300 200)
-        direction (deref (state :moving))]
+        player (deref (state :player))
+        move (:moving player)]
     (clear-frame)
-    (update-movement direction world)
+    (update-movement move world)
     (draw-background)
     (world/draw-world world)
     (draw-character)
