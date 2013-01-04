@@ -15,13 +15,20 @@
   (tick [world]
     nil))
 
+(defn set-player-image []
+  (let [player (deref (state :player))
+        image (:image player)
+        new-player (assoc-in player [:image] image)]
+    (reset! (state :player) new-player)
+    new-player))
+
 (defn setup []
   (set-state!
    :player (atom (->Player
                   :player
                   [-50 -50]
                   [(/ (width) 2) (/ (height) 2)]
-                  (load-image "crono_walks.gif")
+                  (load-image "crono_sprite.gif")
                   :still)))
   (no-stroke)
   (smooth)
@@ -29,9 +36,11 @@
 
 (defn draw-character []
   (let [player (deref (state :player))
-        [x y] (:draw-position player)]
+        [x y] (:draw-position player)
+        img (:image (set-player-image))
+        next-frame (.get img 0 0 40 75)]
     (image-mode :center)
-    (image (:image player) x y 40 40)))
+    (image next-frame x y)))
 
 (defn show-frame-rate [world]
   (text-size 18)  
@@ -80,6 +89,12 @@
 (defn key-name-check [raw-key]
   (= processing.core.PConstants/CODED (int raw-key)))
 
+(defn update-entity-movement [entity move]
+  (assoc-in entity [:moving] move))
+
+;; TODO create an abstraction that auto adds an action to
+;; key-press and key-release by keyword
+
 (defn key-press
   "Handler when a keyboard key is pressed."
   []
@@ -108,13 +123,10 @@
         player (deref (state :player))]
     (reset! (state :player) (update-entity-movement player :still))))
 
-(defn update-position
+(defn update-entity-position
   "Update the :position of a record and return a new record."
   [entity x y]
   (update-in entity [:position] #(map + % [x y])))
-
-(defn update-entity-movement [entity move]
-  (assoc-in entity [:moving] move))
 
 (defn is-in-bounds
   "Determine if x, y coords are in bounds based on direction.
@@ -146,7 +158,7 @@
     ;; Check if Player is in bounds
     (if (is-in-bounds player-x player-y width height direction)
       (reset! (state :player) (update-entity-movement player :still))
-      (reset! (state :player) (update-position player x y)))))
+      (reset! (state :player) (update-entity-position player x y)))))
 
 (defn draw-background
   "Draw the background"
