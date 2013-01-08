@@ -1,10 +1,10 @@
 (ns mh2d.engine
   (:use quil.core)
   (:require [mh2d.world :as world])
+  (:use [mh2d.input :only [moves update-entity-movement]])
   (:use [mh2d.world :only (->World)])
   (:use [mh2d.sprite :only [sprite]])
-  (:import [mh2d.world World])
-  (:import java.awt.event.KeyEvent))
+  (:import [mh2d.world World]))
 
 (defrecord Player [id position draw-position image moving action])
 
@@ -40,6 +40,7 @@
         [img updated-frame-num] sprite]
     (image-mode :center)
     (image img x y)
+    ;; TODO use entity ID so this isn't just for the player
     (reset! (state :player) (assoc-in entity [:action :frame-number] updated-frame-num))
     ))
 
@@ -70,62 +71,6 @@
   []
   (background 255))
 
-(def moves {:up [0 5]
-            :down [0 -5]
-            :left [5 0]
-            :right [-5 0]
-            :still [0 0]})
-
-(def valid-keys
-  ;; Accepts keyboard directional pad and WASD
-  {KeyEvent/VK_UP :up
-   KeyEvent/VK_DOWN :down
-   KeyEvent/VK_LEFT :left
-   KeyEvent/VK_RIGHT :right
-   \w :up
-   \s :down
-   \a :left
-   \d :right})
-
-(defn key-name-check [raw-key]
-  (= processing.core.PConstants/CODED (int raw-key)))
-
-(defn update-entity-movement [entity move]
-  (let [entity (assoc-in entity [:moving] move)]
-    (if-not (= move :still)
-      (assoc-in entity [:action :kind] :player-walking)
-      (assoc-in entity [:action :kind] :player-still))))
-
-;; TODO create an abstraction that auto adds an action to
-;; key-press and key-release by keyword
-
-(defn key-press
-  "Handler when a keyboard key is pressed."
-  []
-  (let [raw-key (raw-key)
-        the-key-code (key-code)
-        ;; Get the exact key name
-        the-key-pressed (if (key-name-check raw-key)
-                          the-key-code
-                          raw-key)
-        ;; Check if it's valid otherwise return :still
-        move (get valid-keys the-key-pressed :still)
-        player (deref (state :player))]
-    ;; TODO handle multiple keys pressed
-    (reset! (state :player) (update-entity-movement player move))))
-
-(defn key-release
-  "Handler when a keyboard key is pressed."
-  ;; TODO multimethod for handling key presses
-  []
-  (let [raw-key (raw-key)
-        the-key-code (key-code)
-        ;; Get the exact key name
-        the-key-released (if (key-name-check raw-key)
-                           the-key-code
-                           raw-key)
-        player (deref (state :player))]
-    (reset! (state :player) (update-entity-movement player :still))))
 
 (defn update-entity-position
   "Update the :position of a record and return a new record."

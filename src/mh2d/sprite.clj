@@ -29,7 +29,7 @@
   (update-in entity [:action :frame-number] inc))
 
 (defn get-frame
-  ""
+  "Return an image for the specified frame."
   [dimensions frame-dimensions img frame-number]
   (let [frames (vec (sprite-frames dimensions frame-dimensions))
         ;; If frame number is above frame index loop
@@ -50,6 +50,7 @@
         dimensions (vector (.width img) (.height img))
         frame-dimensions (:frame-dimensions sheet)
         frame-n (:frame-length sheet)
+        ;; TODO only tick the frame if the specified frame-time has passed
         frame-number (if (>= frame-number frame-n)
                        0
                        (inc frame-number))]
