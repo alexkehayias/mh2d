@@ -1,5 +1,7 @@
 (ns mh2d.world
-  (:use quil.core))
+  (:use quil.core)
+  (:use [mh2d.entities.rabbit :only [create-rabbit]])
+  (:use [mh2d.entities.player :only [get-player-offset]]))
 
 (defrecord World [world-map entities])
 
@@ -18,7 +20,7 @@
   (->WorldMap (generate-test-tiles) [-50 -50] [300 200]))
 
 (defn generate-world []
-  (->World (generate-world-map) {}))
+  (->World (generate-world-map) {:rabbit (create-rabbit)}))
 
 (defn draw-grid
   "Draw a box based on x,y coordinates."
@@ -41,17 +43,6 @@
         end-x (+ x offset-x)
         end-y (+ y offset-y)]
     (draw-grid end-x end-y 25 x y)))
-
-(defn get-player-offset
-  "Translate the player position to canvas offset. At player 0,0
-  the offset should be where the player is drawn."
-  [world]
-  (let [player (get-in world [:entities :player])
-        [player-x player-y] (:position player)
-        [player-screen-x  player-screen-y] (:draw-position player)
-        end-x (+ player-x player-screen-x)
-        end-y (+ player-y player-screen-y)]
-    [end-x end-y]))
 
 (defn draw-world
   "Draw the tiles from the world map of a World record. Return

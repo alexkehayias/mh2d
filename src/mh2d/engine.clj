@@ -3,13 +3,13 @@
   (:require [mh2d.world :as world])
   (:use [mh2d.entities.player :only [create-player
                                      update-player-movement]])
-  (:use [mh2d.entities.core :only [draw-entity]]))
+  (:use [mh2d.entities.core :only [draw-entities]]))
 
 (defn setup
   "Setup for the Processing sketch. Establishes the initial world."
   []
   (let [world (world/generate-world)
-        player (create-player world)
+        player (create-player :player world)
         world (assoc-in world [:entities :player] player)]
     (set-state! :world (atom world))
     (no-stroke)
@@ -62,6 +62,6 @@
          (draw-background)
          (update-player-movement)
          (world/draw-world)
-         (draw-entity :player)
+         (draw-entities)
          (dev-middleware)
          (update-world))))
