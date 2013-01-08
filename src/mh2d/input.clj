@@ -48,19 +48,20 @@
   (let [key-pressed (get-key)
         ;; Check if it's valid otherwise return :still
         move (get valid-keys key-pressed :still)
-        world (state :world)
+        world-atom (state :world)
+        world (deref world-atom)
         player (get-in world [:entities :player])]
     ;; TODO handle multiple keys pressed
     ;; WARNING this replaces current state so if it happens
     ;; while other things are calculating it may mess up the world
-    (set-state! :world (assoc-in world [:entities :player] (update-entity-movement player move)))
-    (println (get-in (state :world) [:entities :player] ))))
+    (reset! world-atom (assoc-in world [:entities :player] (update-entity-movement player move)))))
 
 (defn key-release
   "Handler when a keyboard key is pressed."
   ;; TODO multimethod for handling key presses
   []
   (let [key-released (get-key)
-        world (state :world)
+        world-atom (state :world)
+        world (deref world-atom)
         player (get-in world [:entities :player])]
-    (set-state! :world (assoc-in world [:entities :player] (update-entity-movement player :still)))))
+    (reset! world-atom (assoc-in world [:entities :player] (update-entity-movement player :still)))))

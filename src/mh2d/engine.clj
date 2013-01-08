@@ -2,24 +2,14 @@
   (:use quil.core)
   (:require [mh2d.world :as world])
   (:use [mh2d.input :only [moves update-entity-movement]])
-  (:use [mh2d.world :only (->World)])
-  (:use [mh2d.sprite :only [sprite]])
-  (:import [mh2d.world World]))
+  (:use [mh2d.sprite :only [sprite]]))
 
-(defrecord Player
-    ":position is the players position on the map
-    :draw-position is the players location on canvas
-    :moving is the current moving status (defaults to :still)
-    :action contains current action and sprite"
-    [id position draw-position moving action])
-
-(defprotocol Entity
-  (tick [world]
-    "Update the world based on a tick for this entity."))
-
-(extend-type Player Entity
-  (tick [world] ;;TODO update frame-number
-    nil))
+(defrecord Player [id position draw-position moving action]
+    ;; :position is the players position on the map
+    ;; :draw-position is the players location on canvas
+    ;; :moving is the current moving status (defaults to :still)
+    ;; :action contains current action and sprite
+  )
 
 (defn create-player
   "Return a Player record based on the world passed as an arg."
@@ -38,7 +28,7 @@
   (let [world (world/generate-world)
         player (create-player world)
         world (assoc-in world [:entities :player] player)]
-    (set-state! :world world)
+    (set-state! :world (atom world))
     (no-stroke)
     (smooth)
     (frame-rate 60)))
@@ -117,7 +107,7 @@
         direction (:moving player)
         move (moves direction)        
         [player-x player-y] (:position player)
-        [width height] (:dimensions world)
+        [width height] (get-in world [:world-map :dimensions])
         update-world (partial assoc-in world [:entities :player])]
     ;; Check if Player is in bounds
     (if (is-in-bounds player-x player-y width height direction)
@@ -135,12 +125,13 @@
   "Loops the game according to the setup function. Updates a
   World record and resets it."
   []
-  (let [world (state :world)]
-    (clear-frame)
+  (clear-frame)
+  (let [world (deref (state :world))
+        update-world (partial reset! (state :world))]
     (->> world
          (draw-background)
          (update-player-movement)
          (world/draw-world)
          (draw-entity :player)
-         (set-state! :world) 
-         (dev-middleware))))
+         (dev-middleware)
+         (update-world))))
