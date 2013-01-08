@@ -31,30 +31,36 @@
 ;; TODO create an abstraction that auto adds an action to
 ;; key-press and key-release by keyword
 
+(defn get-key
+  "Return the keyboard key pressed by the user as a number
+  or the letter value of the key."
+  []
+  (let [raw-key (raw-key)
+        the-key-code (key-code)]
+    ;; Get the exact key name
+    (if (key-name-check raw-key)
+      the-key-code
+      raw-key)))
+
 (defn key-press
   "Handler when a keyboard key is pressed."
   []
-  (let [raw-key (raw-key)
-        the-key-code (key-code)
-        ;; Get the exact key name
-        the-key-pressed (if (key-name-check raw-key)
-                          the-key-code
-                          raw-key)
+  (let [key-pressed (get-key)
         ;; Check if it's valid otherwise return :still
-        move (get valid-keys the-key-pressed :still)
-        player (deref (state :player))]
+        move (get valid-keys key-pressed :still)
+        world (state :world)
+        player (get-in world [:entities :player])]
     ;; TODO handle multiple keys pressed
-    (reset! (state :player) (update-entity-movement player move))))
+    ;; WARNING this replaces current state so if it happens
+    ;; while other things are calculating it may mess up the world
+    (set-state! :world (assoc-in world [:entities :player] (update-entity-movement player move)))
+    (println (get-in (state :world) [:entities :player] ))))
 
 (defn key-release
   "Handler when a keyboard key is pressed."
   ;; TODO multimethod for handling key presses
   []
-  (let [raw-key (raw-key)
-        the-key-code (key-code)
-        ;; Get the exact key name
-        the-key-released (if (key-name-check raw-key)
-                           the-key-code
-                           raw-key)
-        player (deref (state :player))]
-    (reset! (state :player) (update-entity-movement player :still))))
+  (let [key-released (get-key)
+        world (state :world)
+        player (get-in world [:entities :player])]
+    (set-state! :world (assoc-in world [:entities :player] (update-entity-movement player :still)))))
