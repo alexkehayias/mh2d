@@ -2,45 +2,46 @@
   (:use quil.core)
   (:require [mh2d.world :as world])
   (:use [mh2d.world :only (->World)])
+  (:use [mh2d.sprite :only [sprite]])
   (:import [mh2d.world World])
   (:import java.awt.event.KeyEvent))
 
-(defrecord Player [id position draw-position image moving])
+(defrecord Player [id position draw-position image moving action])
 
 (defprotocol Entity
   (tick [world]
     "Update the world based on a tick for this entity."))
 
 (extend-type Player Entity
-  (tick [world]
+  (tick [world] ;;TODO update frame-number
     nil))
-
-(defn set-player-image []
-  (let [player (deref (state :player))
-        image (:image player)
-        new-player (assoc-in player [:image] image)]
-    (reset! (state :player) new-player)
-    new-player))
 
 (defn setup []
   (set-state!
    :player (atom (->Player
                   :player
-                  [-50 -50]
+                  [-80 -80]
                   [(/ (width) 2) (/ (height) 2)]
-                  (load-image "crono_sprite.gif")
-                  :still)))
+                  (load-image "player_walking.png")
+                  :still
+                  {:kind :player-still :frame-number 0} )))
   (no-stroke)
   (smooth)
   (frame-rate 60))
 
-(defn draw-character []
-  (let [player (deref (state :player))
-        [x y] (:draw-position player)
-        img (:image (set-player-image))
-        next-frame (.get img 0 0 40 75)]
+(defn draw-entity
+  "Draws an entity to the canvas. ONLY has side effects."
+  [entity]
+  (let [[x y] (:draw-position entity)
+        action (:action entity)
+        kind (:kind action)
+        frame-number (:frame-number action)
+        sprite (sprite entity kind frame-number)
+        [img updated-frame-num] sprite]
     (image-mode :center)
-    (image next-frame x y)))
+    (image img x y)
+    (reset! (state :player) (assoc-in entity [:action :frame-number] updated-frame-num))
+    ))
 
 (defn show-frame-rate [world]
   (text-size 18)  
@@ -90,7 +91,10 @@
   (= processing.core.PConstants/CODED (int raw-key)))
 
 (defn update-entity-movement [entity move]
-  (assoc-in entity [:moving] move))
+  (let [entity (assoc-in entity [:moving] move)]
+    (if-not (= move :still)
+      (assoc-in entity [:action :kind] :player-walking)
+      (assoc-in entity [:action :kind] :player-still))))
 
 ;; TODO create an abstraction that auto adds an action to
 ;; key-press and key-release by keyword
@@ -125,8 +129,8 @@
 
 (defn update-entity-position
   "Update the :position of a record and return a new record."
-  [entity x y]
-  (update-in entity [:position] #(map + % [x y])))
+  [entity move]
+  (update-in entity [:position] #(map + % move)))
 
 (defn is-in-bounds
   "Determine if x, y coords are in bounds based on direction.
@@ -134,16 +138,16 @@
   based on the entity image so it looks natural."
   [x y width height direction]
   (case direction
-    :left (if (>= x -15)
+    :left (if (<= x -15)
             (boolean true)
             (boolean false))
-    :up (if (>= y 0)
+    :up (if (<= y 0)
           (boolean true)
           (boolean false))
-    :right (if (<= x (+ 10 (- width)))
+    :right (if (>= x (+ 10 (- width)))
              (boolean true)
              (boolean false))
-    :down (if (<= y (+ 20 (- height)))
+    :down (if (>= y (+ 20 (- height)))
             (boolean true)
             (boolean false))
     (boolean true)))
@@ -151,19 +155,22 @@
 (defn update-movement
   "Updates the start-x and start-y based on the :movement atom"
   [direction world]
-  (let [[x y] (moves direction)
-        player (deref (state :player))
+  (let [move (moves direction)
+        pl (state :player)
+        player (deref pl)
         [player-x player-y] (:position player)
         [width height] (:dimensions world)]
     ;; Check if Player is in bounds
     (if (is-in-bounds player-x player-y width height direction)
-      (reset! (state :player) (update-entity-movement player :still))
-      (reset! (state :player) (update-entity-position player x y)))))
+      (reset! pl (update-entity-position player move))
+      (reset! pl (update-entity-movement player :still)))))
+
 
 (defn draw-background
   "Draw the background"
   []
   (fill 200)
+
   (rect 0 0 (width) (height)))
 
 (defn draw []
@@ -171,8 +178,8 @@
         player (deref (state :player))
         move (:moving player)]
     (clear-frame)
-    (update-movement move world)
+    (when-not (= move :still) (update-movement move world))
     (draw-background)
     (world/draw-world world)
-    (draw-character)
+    (draw-entity (deref (state :player)))
     (dev-middleware world)))
