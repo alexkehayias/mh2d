@@ -1,7 +1,17 @@
 (ns mh2d.entities.core
   (:use quil.core)
-  (:use [mh2d.sprite :only [sprite]])
-  (:use [mh2d.entities.player :only [get-player-offset]]))
+  (:use [mh2d.sprite :only [sprite]]))
+
+(defn get-player-offset
+  "Translate the player position to canvas offset. At player 0,0
+  the offset should be where the player is drawn."
+  [world]
+  (let [player (get-in world [:entities :player])
+        [player-x player-y] (:position player)
+        [player-screen-x  player-screen-y] (:draw-position player)
+        end-x (+ player-x player-screen-x)
+        end-y (+ player-y player-screen-y)]
+    [end-x end-y]))
 
 (defn draw-entity
   "Draws an entity to the canvas. Returns an updated World."

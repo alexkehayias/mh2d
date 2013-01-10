@@ -1,6 +1,5 @@
 (ns mh2d.sprite
-  (:use quil.core)
-  (:use [mh2d.world :only [get-player-offset]]))
+  (:use quil.core))
 
 (def sprite-sheets
   "Hash of vector keywords to spritesheet files"

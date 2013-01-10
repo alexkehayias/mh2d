@@ -36,14 +36,3 @@
     (if (is-in-bounds player-x player-y width height direction)
       (update-world (update-entity-position player move))
       (update-world (update-entity-movement player :still)))))
-
-(defn get-player-offset
-  "Translate the player position to canvas offset. At player 0,0
-  the offset should be where the player is drawn."
-  [world]
-  (let [player (get-in world [:entities :player])
-        [player-x player-y] (:position player)
-        [player-screen-x  player-screen-y] (:draw-position player)
-        end-x (+ player-x player-screen-x)
-        end-y (+ player-y player-screen-y)]
-    [end-x end-y]))

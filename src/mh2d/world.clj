@@ -1,7 +1,7 @@
 (ns mh2d.world
   (:use quil.core)
   (:use [mh2d.entities.rabbit :only [create-rabbit]])
-  (:use [mh2d.entities.player :only [get-player-offset]]))
+  (:use [mh2d.entities.core :only [get-player-offset]]))
 
 (defrecord World [world-map entities])
 
