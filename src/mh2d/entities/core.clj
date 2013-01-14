@@ -49,11 +49,10 @@
 
 (defn draw-entities
   "Takes a World record and draws each entity as a side-effect.
-  returns world."
+  returns world with updated entities."
   [world]
-  (let [ids (keys (:entities world))]
-    (loop [w world
-           entity-ids ids]
-      (if (seq entity-ids)
-        (recur (draw-entity (first entity-ids) w) (rest entity-ids))        
-        w))))
+  (loop [world world
+         ids (keys (:entities world))]
+    (if (seq ids)
+      (recur (draw-entity (first ids) world) (rest ids))        
+      world)))
