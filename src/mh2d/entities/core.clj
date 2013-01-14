@@ -17,24 +17,10 @@
   "Draws an entity to the canvas. Returns an updated World."
   [id world]
   (let [entity (get-in world [:entities id])
-        [x y] (map + (:position entity) (get-player-offset world))
-        action (:action entity)
-        kind (:kind action)
-        frame-number (:frame-number action)
-        sprite (sprite entity kind frame-number)
-        [img updated-frame-num] sprite]
-    (image-mode :center)
-    ;; FIX apply an offset based on the player position so that
-    ;; the image doesn't stay fixed
-    (image img x y)
-    ;; FIX This doesn't get updated since world is not recycled
-    (assoc-in world [:entities (:id entity) :action :frame-number] updated-frame-num)))
-
-(defn draw-player
-  "Draw the player in the middle of the screen"
-  [world]
-  (let [entity (get-in world [:entities :player])
-        [x y] (:draw-position entity)
+        ;; TODO if there are more conditionals break this out
+        [x y] (if (= id :player)
+                (:draw-position entity)
+                (map + (:position entity) (get-player-offset world)))
         action (:action entity)
         kind (:kind action)
         frame-number (:frame-number action)
@@ -69,8 +55,5 @@
     (loop [w world
            entity-ids ids]
       (if (seq entity-ids)
-        (let [id (first entity-ids)]
-          (condp = id
-            :player (recur (draw-player w) (rest entity-ids))
-            (recur (draw-entity id w) (rest entity-ids))))
+        (recur (draw-entity (first entity-ids) w) (rest entity-ids))        
         w))))
