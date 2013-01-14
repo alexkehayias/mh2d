@@ -1,6 +1,7 @@
 (ns mh2d.engine
   (:use quil.core)
   (:require [mh2d.world :as world])
+  (:use [mh2d.state :only [game-state]])  
   (:use [mh2d.entities.player :only [create-player
                                      update-player-movement]])
   (:use [mh2d.entities.core :only [draw-entities]]))
@@ -11,7 +12,7 @@
   (let [world (world/generate-world)
         player (create-player :player world)
         world (assoc-in world [:entities :player] player)]
-    (set-state! :world (atom world))
+    (reset! game-state {:world world})
     (no-stroke)
     (smooth)
     (frame-rate 60)))
@@ -31,7 +32,7 @@
   nil)
 
 (defn dev-middleware
-  "Threads a world record to all dev middleware functions.
+  "Threads a World to all dev middleware functions.
   All middleware must take a world as an arg and return a world."
   [world]
   (-> world
@@ -40,7 +41,7 @@
   world)
 
 (defn clear-frame
-  "Clear the frame"
+  "Clear the canvas frame."
   []
   (background 255))
 
@@ -53,15 +54,16 @@
 
 (defn draw
   "Loops the game according to the setup function. Updates a
-  World record and resets it."
+  World record by threading it through functions that return
+  a new World."
   []
   (clear-frame)
-  (let [world (deref (state :world))
-        update-world (partial reset! (state :world))]
+  (let [world (:world @game-state)
+        update-game-state (partial swap! game-state assoc-in [:world])]
     (->> world
          (draw-background)
          (update-player-movement)
          (world/draw-world)
          (draw-entities)
          (dev-middleware)
-         (update-world))))
+         (update-game-state))))

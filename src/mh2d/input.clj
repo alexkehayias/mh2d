@@ -1,5 +1,6 @@
 (ns mh2d.input
   (:use quil.core)
+  (:use [mh2d.state :only [game-state]])
   (:import java.awt.event.KeyEvent))
 
 (def moves {:up [0 5]
@@ -48,20 +49,18 @@
   (let [key-pressed (get-key)
         ;; Check if it's valid otherwise return :still
         move (get valid-keys key-pressed :still)
-        world-atom (state :world)
-        world (deref world-atom)
+        world (:world @game-state)
         player (get-in world [:entities :player])]
     ;; TODO handle multiple keys pressed
     ;; WARNING this replaces current state so if it happens
     ;; while other things are calculating it may mess up the world
-    (reset! world-atom (assoc-in world [:entities :player] (update-entity-movement player move)))))
+    (swap! game-state assoc-in [:world :entities :player] (update-entity-movement player move))))
 
 (defn key-release
   "Handler when a keyboard key is pressed."
   ;; TODO multimethod for handling key presses
   []
   (let [key-released (get-key)
-        world-atom (state :world)
-        world (deref world-atom)
+        world (:world @game-state)
         player (get-in world [:entities :player])]
-    (reset! world-atom (assoc-in world [:entities :player] (update-entity-movement player :still)))))
+    (swap! game-state assoc-in [:world :entities :player] (update-entity-movement player :still))))

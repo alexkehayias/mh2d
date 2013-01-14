@@ -49,7 +49,7 @@
 
 (defn draw-entities
   "Takes a World record and draws each entity as a side-effect.
-  returns world with updated entities."
+  Returns world with all entities updated."
   [world]
   (loop [world world
          ids (keys (:entities world))]
