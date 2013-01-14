@@ -58,19 +58,11 @@
   based on the entity image so it looks natural."
   [x y width height direction]
   (case direction
-    :left (if (<= x -15)
-            (boolean true)
-            (boolean false))
-    :up (if (<= y 0)
-          (boolean true)
-          (boolean false))
-    :right (if (>= x (+ 10 (- width)))
-             (boolean true)
-             (boolean false))
-    :down (if (>= y (+ 20 (- height)))
-            (boolean true)
-            (boolean false))
-    (boolean true)))
+    :left (if (<= x -15) true false)
+    :up (if (<= y 0) true false)
+    :right (if (>= x (+ 10 (- width))) true false)
+    :down (if (>= y (+ 20 (- height))) true false)
+    true))
 
 (defn draw-entities
   "Takes a World record and draws each entity as a side-effect.
