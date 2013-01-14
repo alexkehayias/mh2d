@@ -17,7 +17,7 @@
   "Draws an entity to the canvas. Returns an updated World."
   [id world]
   (let [entity (get-in world [:entities id])
-        [x y] (map + (:position entity) (get-player-offset world)) 
+        [x y] (map + (:position entity) (get-player-offset world))
         action (:action entity)
         kind (:kind action)
         frame-number (:frame-number action)
@@ -41,10 +41,7 @@
         sprite (sprite entity kind frame-number)
         [img updated-frame-num] sprite]
     (image-mode :center)
-    ;; FIX apply an offset based on the player position so that
-    ;; the image doesn't stay fixed
     (image img x y)
-    ;; FIX This doesn't get updated since world is not recycled
     (assoc-in world [:entities (:id entity) :action :frame-number] updated-frame-num)))
 
 (defn update-entity-position
@@ -68,10 +65,12 @@
   "Takes a World record and draws each entity as a side-effect.
   returns world."
   [world]
-  (doseq [entity-id (keys (:entities world))]
-    ;; FIX World object gets updated on each pass but only the
-    ;; original world is passed back
-    (if (not= entity-id :player)
-      (draw-entity entity-id world)
-      (draw-player world)))
-  world)
+  (let [ids (keys (:entities world))]
+    (loop [w world
+           entity-ids ids]
+      (if (seq entity-ids)
+        (let [id (first entity-ids)]
+          (condp = id
+            :player (recur (draw-player w) (rest entity-ids))
+            (recur (draw-entity id w) (rest entity-ids))))
+        w))))

@@ -20,7 +20,7 @@
   (->WorldMap (generate-test-tiles) [-50 -50] [300 200]))
 
 (defn generate-world []
-  (->World (generate-world-map) {:rabbit (create-rabbit)}))
+  (->World (generate-world-map) {:rabbit (create-rabbit :rabbit)}))
 
 (defn draw-grid
   "Draw a box based on x,y coordinates."
