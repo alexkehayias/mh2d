@@ -60,7 +60,7 @@
   (clear-frame)
   (let [world (:world @game-state)
         update-game-state (partial swap! game-state assoc-in [:world])]
-    (->> world
+    (-> world
          (draw-background)
          (update-player-movement)
          (world/draw-world)
