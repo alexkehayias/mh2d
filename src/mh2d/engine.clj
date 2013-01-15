@@ -61,9 +61,9 @@
   (let [world (:world @game-state)
         update-game-state (partial swap! game-state assoc-in [:world])]
     (-> world
-         (draw-background)
-         (update-player-movement)
-         (world/draw-world)
-         (draw-entities)
-         (dev-middleware)
-         (update-game-state))))
+        draw-background
+        update-player-movement
+        world/draw-world
+        draw-entities
+        dev-middleware
+        update-game-state)))
