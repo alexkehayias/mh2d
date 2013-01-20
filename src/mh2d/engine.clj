@@ -62,11 +62,10 @@
   a new World."
   []
   (clear-frame)
-  (let [world (:world @game-state)]
-    (-> world
-        draw-background
-        update-player-movement
-        world/draw-world
-        draw-entities
-        dev-middleware
-        update-game-state!)))
+  (-> (:world @game-state)
+      draw-background
+      update-player-movement
+      world/draw-world
+      draw-entities
+      dev-middleware
+      update-game-state!))
