@@ -52,18 +52,21 @@
   (rect 0 0 (width) (height))
   world)
 
+(def update-game-state!
+  "Update the game state world."
+  (partial swap! game-state assoc-in [:world]))
+
 (defn draw
   "Loops the game according to the setup function. Updates a
   World record by threading it through functions that return
   a new World."
   []
   (clear-frame)
-  (let [world (:world @game-state)
-        update-game-state (partial swap! game-state assoc-in [:world])]
+  (let [world (:world @game-state)]
     (-> world
         draw-background
         update-player-movement
         world/draw-world
         draw-entities
         dev-middleware
-        update-game-state)))
+        update-game-state!)))
