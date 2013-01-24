@@ -7,4 +7,4 @@
   (map->Rabbit {:id id
                 :position [0 0]
                 :moving :still
-                :action {:kind :player-still :frame-number 0}}))
+                :action {:kind :still :frame-number 0}}))

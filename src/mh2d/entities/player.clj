@@ -1,8 +1,9 @@
 (ns mh2d.entities.player
   (:use quil.core)
+  (:use [mh2d.input :only [moves]])
   (:use [mh2d.entities.core :only [is-in-bounds
-                                  update-entity-position]])
-  (:use [mh2d.input :only [moves update-entity-movement]]))
+                                   update-entity-position
+                                   update-entity-movement]]))
 
 (defrecord Player [id position draw-position moving action]
     ;; :position is the players position on the map
@@ -20,7 +21,7 @@
                   :position start
                   :draw-position [(/ (width) 2) (/ (height) 2)]
                   :moving :still
-                  :action {:kind :player-still :frame-number 0}})))
+                  :action {:kind :still :frame-number 0}})))
 
 (defn update-player-movement
   "Update the world canvas based on the players position.

@@ -3,12 +3,12 @@
 
 (def sprite-sheets
   "Hash of vector keywords to spritesheet files"
-  [{:name             :player-walking
+  [{:name             :walking
     :path             "player_walking.png"
     :frame-dimensions [63 100]
     :frame-length     4
     :frame-time       0.3}
-   {:name             :player-still
+   {:name             :still
     :path             "player_walking.png"
     :frame-dimensions [63 100]
     :frame-length     0

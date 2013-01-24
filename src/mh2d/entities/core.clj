@@ -1,5 +1,6 @@
 (ns mh2d.entities.core
   (:use quil.core)
+  (:use mh2d.state)
   (:use [mh2d.sprite :only [sprite]]))
 
 (defn get-player-offset
@@ -56,3 +57,29 @@
     (if (seq ids)
       (recur (draw-entity (first ids) world) (rest ids))        
       world)))
+
+(defn update-entity-movement [entity move]
+  (let [entity (assoc-in entity [:moving] move)]
+    (if-not (= move :still)
+      (assoc-in entity [:action :kind] :walking)
+      (assoc-in entity [:action :kind] :still))))
+
+(defn move-entity-start
+  "Move an entity by a [x,y] value."
+  ;; WARNING this replaces current state so if it happens
+  ;; while other things are calculating it may mess up the world  
+  [entity_id move]
+  (let [world (:world @game-state)
+        entity (get-in world [:entities entity_id])]
+    (swap! game-state assoc-in
+           [:world :entities entity_id]
+           (update-entity-movement entity move))))
+
+(defn move-entity-end
+  "Stop an entity from moving."
+  [entity_id]
+  (let [world (:world @game-state)
+        entity (get-in world [:entities entity_id])]
+    (swap! game-state assoc-in
+           [:world :entities entity_id]
+           (update-entity-movement entity :still))))

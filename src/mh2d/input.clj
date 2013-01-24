@@ -1,6 +1,8 @@
 (ns mh2d.input
   (:use quil.core)
   (:use [mh2d.state :only [game-state]])
+  (:use [mh2d.entities.core :only [move-entity-start
+                                   move-entity-end]])
   (:import java.awt.event.KeyEvent))
 
 (def moves {:up [0 5]
@@ -23,12 +25,6 @@
 (defn key-name-check [raw-key]
   (= processing.core.PConstants/CODED (int raw-key)))
 
-(defn update-entity-movement [entity move]
-  (let [entity (assoc-in entity [:moving] move)]
-    (if-not (= move :still)
-      (assoc-in entity [:action :kind] :player-walking)
-      (assoc-in entity [:action :kind] :player-still))))
-
 ;; TODO create an abstraction that auto adds an action to
 ;; key-press and key-release by keyword
 
@@ -48,19 +44,15 @@
   []
   (let [key-pressed (get-key)
         ;; Check if it's valid otherwise return :still
-        move (get valid-keys key-pressed :still)
-        world (:world @game-state)
-        player (get-in world [:entities :player])]
+        move (get valid-keys key-pressed :still)]
     ;; TODO handle multiple keys pressed
     ;; WARNING this replaces current state so if it happens
     ;; while other things are calculating it may mess up the world
-    (swap! game-state assoc-in [:world :entities :player] (update-entity-movement player move))))
+    (move-entity-start :player move)))
 
 (defn key-release
   "Handler when a keyboard key is pressed."
   ;; TODO multimethod for handling key presses
   []
-  (let [key-released (get-key)
-        world (:world @game-state)
-        player (get-in world [:entities :player])]
-    (swap! game-state assoc-in [:world :entities :player] (update-entity-movement player :still))))
+  (let [key-released (get-key)]
+    (move-entity-end :player)))
